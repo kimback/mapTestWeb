@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kimb.webapp.itemdao"> 
+	
+	<!-- 구순 LEE샵  -->
+	<select id="getProductList" resultType="hashmap">
+		SELECT
+			seq as seq,
+			product_code as productCode,
+			product_name as productName,
+			brand_code as brandCode,
+			type_code as typeCode,
+			factory_price as factoryPrice,
+			customer_price as customerPrice,
+			reg_date as regDate
+		FROM
+			tb_product;
+	</select>
+	
+	<select id="getProductListByParam" parameterType="hashmap" resultType="hashmap">
+		SELECT
+			seq as seq,
+			product_code as productCode,
+			product_name as productName,
+			brand_code as brandCode,
+			type_code as typeCode,
+			factory_price as factoryPrice,
+			customer_price as customerPrice,
+			reg_date as regDate
+		FROM
+			tb_product
+		WHERE
+			product_code = #{barCode};
+	</select>
+	
+	<insert id="insertList" parameterType="hashmap">
+		INSERT INTO tb_product(product_code, product_name, brand_code, type_code, factory_price, customer_price, reg_date) 
+		VALUES (#{productCode}, #{productName}, #{brandCode}, #{typeCode}, #{factoryPrice}, #{customerPrice}, #{regDate});
+		
+	</insert>
+	
+	
+	<delete id="deleteList" parameterType="hashmap">
+		DELETE FROM tb_product
+		WHERE seq = #{productSeq}
+	
+	</delete>
+	<!-- //구순 LEE 샵 -->
+	
+	
+	
+	<!-- 눈밥 -->
+	<!-- 개인별 토탈 랭크 -->
+	<select id="getSearchList" resultType="hashmap">
+				
+		SELECT 
+			A.id,
+			A.skiResortCode,
+			(SELECT name FROM ski_resort_info WHERE ski_resort_code = A.skiResortCode limit 1) as skiResortName,
+			A.sumCnt,
+			B.name,
+			B.group_code as groupCode,
+			(SELECT name FROM group_info WHERE group_code = B.group_code limit 1) as groupName
+		FROM 
+			(
+			SELECT 
+				id as id, 
+				ski_resort_code as skiResortCode,
+				sum(cnt) as sumCnt
+			FROM user_point
+			GROUP BY id, ski_resort_code
+			ORDER BY sumCnt desc
+			LIMIT 30
+			) A
+			LEFT OUTER JOIN user_info B
+			ON A.id = B.id
+	</select>
+	
+	<!-- 그룹별 토탈 랭크 -->
+	<select id="getSearchGroupRankList" resultType="hashmap">
+		SELECT 
+		 AA.skiResortCode,
+		 (SELECT name FROM ski_resort_info WHERE ski_resort_code = AA.skiResortCode limit 1) as skiResortName,
+		 AA.groupCode,
+		 (SELECT name FROM group_info WHERE group_code = AA.groupCode limit 1) as groupName,
+		 SUM(AA.cnt) as sumCnt
+		 
+		FROM 
+		(
+			SELECT 
+				u.id as id,
+				u.ski_resort_code as skiResortCode,
+				(SELECT g.group_code FROM user_info g WHERE g.id=u.id limit 1) as groupCode,
+				u.cnt
+			FROM user_point u
+		)  AA
+		WHERE AA.groupCode is not null
+		GROUP BY AA.skiResortCode, AA.groupCode
+	</select>
+	
+	<!-- 개인데이터 1  그리드 데이터 -->
+	<select id="getSearchListByParam" parameterType="hashmap" resultType="hashmap">
+				
+		SELECT
+			AA.id as id,
+			AA.ski_resort_code as skiResortCode,
+			(SELECT name FROM ski_resort_info WHERE ski_resort_code = AA.ski_resort_code limit 1) as skiResortName,
+			AA.block_code as blockCode,
+			(SELECT name FROM block_info WHERE block_code = AA.block_code limit 1) as blockName,
+			DATE_FORMAT(AA.reg_dt, "%Y-%m-%d") as regDt,
+			SUM(AA.cnt) as cnt
+		FROM 
+		user_point AA
+		WHERE 
+		AA.id = #{userId}
+		GROUP BY AA.ski_resort_code, AA.block_code, DATE_FORMAT(AA.reg_dt, "%Y-%m-%d")
+		ORDER BY reg_dt desc
+		limit 100
+		
+	</select>
+	
+	<!-- 개인데이터 1  차트 데이터 -->
+	<select id="getSearchChartListByParam" parameterType="hashmap" resultType="hashmap">
+		SELECT
+			-- AA.ski_resort_code as skiResortCode,
+			(SELECT name FROM ski_resort_info WHERE ski_resort_code = AA.ski_resort_code limit 1) as skiResortName,
+			DATE_FORMAT(AA.reg_dt, "%Y-%m-%d")  as regDt,
+			SUM(AA.cnt) as cnt
+		FROM 
+		user_point AA
+		WHERE AA.id = #{userId}
+		AND DATE(AA.reg_dt) >= (NOW() - INTERVAL 4 MONTH) 
+		GROUP BY AA.ski_resort_code, DATE_FORMAT(AA.reg_dt, "%Y-%m-%d")
+		ORDER BY reg_dt desc
+	</select>
+	
+	
+	
+	<!-- 로그인유저 정보 조회 -->
+	<select id="getUserData" parameterType="hashmap" resultType="hashmap">
+		
+		SELECT 
+			CASE userCnt
+				WHEN 0 THEN
+				'F'
+			ELSE
+				'T'
+			END as loginAuth
+		FROM 
+			(
+			SELECT
+			 	count(*) as userCnt
+			FROM
+				user_info
+			WHERE id = #{userId} 
+			) A
+			
+	</select>
+	
+	<!-- 로그인 처리 -->
+	<select id="getLoginData" parameterType="hashmap" resultType="hashmap">
+		
+		SELECT 
+			CASE userCnt
+				WHEN 0 THEN
+				'LF'
+			ELSE
+				'LT'
+			END as loginAuth
+		FROM 
+			(
+			SELECT
+			 	count(*) as userCnt
+			FROM
+				user_info
+			WHERE id = #{userId}
+			AND password = password( #{userPw} )
+			) A
+			
+	</select>
+	
+	
+	<!-- 스키장 정보 리스트 조회 -->
+	<select id="getSkiResortList" parameterType="hashmap" resultType="hashmap">
+		SELECT 
+			ski_resort_code as skiResortCode,
+			name as name,
+			reg_dt as regDt
+		FROM ski_resort_info
+	</select>
+	
+	
+	<!-- 블록 정보 리스트 조회 -->
+	<select id="getGeoDataList" parameterType="hashmap" resultType="hashmap">
+		SELECT
+		block_code as blockCode,
+		ski_resort_code as skiResortCode,
+		name as name,
+		latitude as latitude,
+		longitude as longitude,
+		meter as meter
+		FROM block_info
+		WHERE ski_resort_code = #{selectedResort};
+	</select>
+	
+	
+	
+	<!-- 사용자 가입 처리 -->
+	<insert id="userJoinService" parameterType="hashmap">
+		insert into user_info(id, name, password)
+		values(#{userId}, #{userId}, password( #{userPw} ));
+	</insert>
+	
+	
+	<!-- 지오펜싱에의한 눈밥 포인트 업데이트 처리 -->
+	<insert id="geoDataUpdateByTrigger" parameterType="hashmap">
+		insert into user_point(id, ski_resort_code, block_code, reg_dt, cnt)
+		values (#{userId},#{selectedResort},#{blockCode},now(),'1');
+	</insert>
+	
+
+</mapper>
+
+	

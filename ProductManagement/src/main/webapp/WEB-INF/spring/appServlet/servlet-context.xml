@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/mvc"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:beans="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+	<!-- DispatcherServlet Context: defines this servlet's request-processing infrastructure -->
+	
+	<!-- Enables the Spring MVC @Controller programming model -->
+	<annotation-driven />
+	
+	<!-- jsp등으로 들어오는것 처리  -->
+	<default-servlet-handler />
+
+ 	<interceptors>
+        <interceptor>
+            <mapping path="/**"/>
+            <beans:bean id="loggerInterceptor" class="com.kimb.webapp.intercept.Measuringinterceptor"></beans:bean>
+        </interceptor>
+    </interceptors>
+
+
+	<!-- Handles HTTP GET requests for /resources/** by efficiently serving up static resources in the ${webappRoot}/resources directory -->
+	<resources mapping="/resources/**" location="/resources/" />
+
+	<!-- Resolves views selected for rendering by @Controllers to .jsp resources in the /WEB-INF/views directory -->
+	<beans:bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<beans:property name="prefix" value="/WEB-INF/views/" />
+		<beans:property name="suffix" value=".jsp" />
+	</beans:bean>
+	
+	<!-- <context:component-scan base-package="com.kimb.webapp" /> -->
+	
+	<!-- 컨트롤러가 여기 있어야한다 -->
+	<!-- LEE 샵 컨트롤 -->
+	<beans:bean class="com.kimb.webapp.controller.ProductController">
+		<beans:property name="productService" ref="productService"/>
+		<beans:property name="iUploadService" ref="iUploadService"/>
+	</beans:bean>
+	
+	<!-- snowGoGo controller -->
+	<beans:bean class="com.kimb.webapp.controller.SnowGoGoController">
+		<beans:property name="snowGoGoService" ref="snowGoGoService"/>
+	</beans:bean>
+	
+	<!-- RESTApi 연동 -->
+	<beans:bean class="com.kimb.webapp.controller.MobileRequestController">
+		<beans:property name="snowGoGoService" ref="snowGoGoService"/> 
+		<!-- <beans:property name="productService" ref="productService"/> -->
+		<!-- <beans:property name="iUploadService" ref="iUploadService"/> -->
+	</beans:bean>
+	
+	<!-- Configure the multipart resolver -->
+    <beans:bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+        <!-- one of the properties available; the maximum file size in bytes (100MB)-->
+        <beans:property name="maxUploadSize" value="100000000  "/>
+    </beans:bean>
+    
+	
+</beans:beans>
