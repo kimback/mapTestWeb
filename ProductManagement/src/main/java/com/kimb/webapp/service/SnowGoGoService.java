@@ -1,7 +1,9 @@
 package com.kimb.webapp.service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.ibatis.session.SqlSession;
 
@@ -31,9 +33,38 @@ public class SnowGoGoService {
 	 * @param paraMap
 	 * @return
 	 */
-	public List<HashMap<String, Object>> getSearchChartList(HashMap<String, String> paraMap) {
-		List<HashMap<String, Object>> list = sqlSession.selectList("com.kimb.webapp.itemdao.getSearchChartListByParam", paraMap);
-		return (List<HashMap<String, Object>>) list;
+	public List<List<HashMap<String,Object>>> getSearchChartList(HashMap<String, String> paraMap) {
+		
+		
+		List<List<HashMap<String,Object>>> mastList = new ArrayList<List<HashMap<String,Object>>>();
+		
+		//포인트가 저장된 스키장 리스트
+		List<HashMap<String, Object>> list1 = sqlSession.selectList("com.kimb.webapp.itemdao.getSkiList", paraMap);
+		
+		String resultStr = "";
+		
+		for(int i=0; i<list1.size(); i++) {
+			String dynamicStr = "CASE WHEN d.skiResortName = #{AAA} THEN d.cnt ELSE '' END as #{BBB}";
+			HashMap<String, Object> tempMap = list1.get(i);
+			
+			dynamicStr = dynamicStr.replace("#{AAA}", "'" + tempMap.get("skiResortName").toString() + "'");
+			dynamicStr = dynamicStr.replace("#{BBB}", tempMap.get("skiResortCode").toString());
+			if(i+1 != list1.size()) {
+				dynamicStr += ", ";
+			}
+			resultStr += dynamicStr;
+			
+		}
+		
+		Map<String, Object> multiParam = new HashMap<String, Object>();
+		multiParam.put("userId", paraMap.get("userId"));
+		multiParam.put("dynamicColumns", resultStr);
+		
+		List<HashMap<String, Object>> list2 = sqlSession.selectList("com.kimb.webapp.itemdao.getSearchChartListByParam", multiParam);
+		mastList.add(list1);
+		mastList.add(list2);
+		
+		return mastList;
 	}
 	
 	/**
@@ -46,6 +77,30 @@ public class SnowGoGoService {
 		List<HashMap<String, Object>> list = sqlSession.selectList("com.kimb.webapp.itemdao.getSearchListByParam", paraMap);
 		return (List<HashMap<String, Object>>) list;
 	}
+	
+	/**
+	 * 개인통계데이터 2 차트 데이터
+	 * getSearchList
+	 * @param paraMap
+	 * @return
+	 */
+	public List<HashMap<String, Object>> getDayNameChartData(HashMap<String, String> paraMap) {
+		List<HashMap<String, Object>> list = sqlSession.selectList("com.kimb.webapp.itemdao.getDayNameChartData", paraMap);
+		return (List<HashMap<String, Object>>) list;
+	}
+	
+	
+	/**
+	 * 개인통계데이터 2 그리드 데이터
+	 * getSearchList
+	 * @param paraMap
+	 * @return
+	 */
+	public List<HashMap<String, Object>> getGridData2(HashMap<String, String> paraMap) {
+		List<HashMap<String, Object>> list = sqlSession.selectList("com.kimb.webapp.itemdao.getGridData2", paraMap);
+		return (List<HashMap<String, Object>>) list;
+	}
+	
 	
 	/**
 	 * 그룹별 순위

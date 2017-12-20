@@ -12,7 +12,7 @@
 <!DOCTYPE html>
 <html lang="ko">
   <head>
-    <title> 눈밥 대쉬보드 </title>
+    <title> 눈밥스(스노우마일리지) 대쉬보드 </title>
    <jsp:directive.include file = "comm/commHead.jsp" />
 
  	<script type="text/javascript"> 
@@ -30,7 +30,7 @@
 		    
 		    
 		    $('#dataSearch').click(function(){
-		    		alert('조회');
+		    		alert('준비중');
 		    	
 		    });
 	 
@@ -121,10 +121,11 @@
   	
   </head>
   <body>
-    <h1 style="margin-left: 30px; margin-top: 10px; text-align: center;"> 눈밥</h1>
+    <h1 style="margin-left: 30px; margin-top: 10px; text-align: center;"> 눈밥스(스노우마일리지) 전체랭킹</h1>
     
     <!-- 버튼라인-->
     <div id="buttonLine" style="text-align: right; margin-right: 3%; margin-top: 20px; margin-bottom: 10px;">
+	    <!-- <input class="form-control" id="inputdefault" type="text" style="width: 100px; display:inline; margin-right:5px;"> -->
 	    <button id="dataSearch" type="button" class="btn btn-info">조회</button>
 	    <button id="excelDownload" type="button" class="btn btn-success">더보기</button>
     </div>

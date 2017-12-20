@@ -122,22 +122,84 @@
 		
 	</select>
 	
-	<!-- 개인데이터 1  차트 데이터 -->
-	<select id="getSearchChartListByParam" parameterType="hashmap" resultType="hashmap">
-		SELECT
-			-- AA.ski_resort_code as skiResortCode,
-			(SELECT name FROM ski_resort_info WHERE ski_resort_code = AA.ski_resort_code limit 1) as skiResortName,
-			DATE_FORMAT(AA.reg_dt, "%Y-%m-%d")  as regDt,
-			SUM(AA.cnt) as cnt
+	
+	
+	<!-- 개인데이터 1  차트 데이터 해더 -->
+	<select id="getSkiList" parameterType="hashmap" resultType="hashmap">
+		SELECT 
+			 AA.ski_resort_code as skiResortCode,
+			(SELECT name FROM ski_resort_info WHERE ski_resort_code = AA.ski_resort_code limit 1) as skiResortName
 		FROM 
 		user_point AA
 		WHERE AA.id = #{userId}
 		AND DATE(AA.reg_dt) >= (NOW() - INTERVAL 4 MONTH) 
-		GROUP BY AA.ski_resort_code, DATE_FORMAT(AA.reg_dt, "%Y-%m-%d")
-		ORDER BY reg_dt desc
+		GROUP BY skiResortName
+	</select>
+	
+	<!-- 개인데이터 1  차트 데이터 -->
+	<select id="getSearchChartListByParam" parameterType="hashmap" resultType="hashmap">
+			
+		SELECT
+			d.regDt,
+			<![CDATA[
+				${dynamicColumns}
+			]]>
+		FROM
+		(
+			SELECT
+				-- AA.ski_resort_code as skiResortCode,
+				(SELECT name FROM ski_resort_info WHERE ski_resort_code = AA.ski_resort_code limit 1) as skiResortName,
+				DATE_FORMAT(AA.reg_dt, "%Y-%m-%d")  as regDt,
+				SUM(AA.cnt) as cnt
+			FROM 
+			user_point AA
+			WHERE AA.id = #{userId}
+			AND DATE(AA.reg_dt) >= (NOW() - INTERVAL 4 MONTH) 
+			GROUP BY AA.ski_resort_code, DATE_FORMAT(AA.reg_dt, "%Y-%m-%d")
+			ORDER BY reg_dt desc
+		) d
+		
+		
+	</select>
+	
+	<!-- 개인데이터 2 차트 데이터  -->
+	<select id="getDayNameChartData" parameterType="hashmap" resultType="hashmap">
+		select 
+		CASE WHEN dayname(AA.reg_dt) = 'Monday' THEN
+			'월'
+			WHEN dayname(AA.reg_dt) = 'Tuesday' THEN
+			'화'
+			WHEN dayname(AA.reg_dt) = 'Wednesday' THEN
+			'수'
+			WHEN dayname(AA.reg_dt) = 'Thursday' THEN
+			'목'
+			WHEN dayname(AA.reg_dt) = 'Friday' THEN
+			'금'
+			WHEN dayname(AA.reg_dt) = 'Saturday' THEN
+			'토' 
+			WHEN dayname(AA.reg_dt) = 'Sunday' THEN
+			'일' 
+		END as dayName, 
+		sum(AA.cnt) as cnt
+		from user_point AA
+		WHERE AA.id = #{userId}
+		GROUP BY dayName
+	
 	</select>
 	
 	
+	
+	<!-- 개인데이터 2  그리드 데이터 -->
+	<select id="getGridData2" parameterType="hashmap" resultType="hashmap">
+	
+		select 
+		dayname(AA.reg_dt) as dayName, 
+		sum(AA.cnt) as cnt
+		from user_point AA
+		WHERE AA.id = #{userId}
+		GROUP BY dayName
+	
+	</select>
 	
 	<!-- 로그인유저 정보 조회 -->
 	<select id="getUserData" parameterType="hashmap" resultType="hashmap">

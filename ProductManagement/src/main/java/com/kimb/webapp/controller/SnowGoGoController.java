@@ -1,6 +1,7 @@
 package com.kimb.webapp.controller;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -64,15 +65,25 @@ public class SnowGoGoController {
 		
 		String jsonStr = "";
 		
-		List<List<HashMap<String, Object>>> masterList = new ArrayList<List<HashMap<String,Object>>>();
+		List<Collection<?>> masterList = new ArrayList<Collection<?>>();
 		
 		//개인데이터1 - 그리드 데이터
 		List<HashMap<String, Object>> list1 = snowGoGoService.getSearchList(paraMap);
+		
 		//개인데이터1 - 차트 데이터
-		List<HashMap<String, Object>> list2 = snowGoGoService.getSearchChartList(paraMap);
+		List<List<HashMap<String,Object>>> list2 = snowGoGoService.getSearchChartList(paraMap);
+		
+		
+		//개인데이터2 - 차트 데이터
+		List<HashMap<String,Object>> list3 = snowGoGoService.getDayNameChartData(paraMap);
+		
+		//개인데이터2- 그리드 데이터
+		List<HashMap<String, Object>> list4 = snowGoGoService.getGridData2(paraMap);
 		
 		masterList.add(list1);
 		masterList.add(list2);
+		masterList.add(list3);
+		masterList.add(list4);
 		
 		
 		if(masterList != null) {
